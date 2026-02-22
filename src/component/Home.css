@@ -1,0 +1,346 @@
+/* ================= BASE ================= */
+
+body {
+  font-family: "Segoe UI", sans-serif;
+  background: #faf7f2;
+  margin: 0;
+}
+
+.page {
+  min-height: 100vh;
+  color: #333;
+}
+
+.container {
+  width: 95%;
+  max-width: 1200px;
+  margin: auto;
+  padding: 0 14px;
+}
+
+/* ================= HEADER ================= */
+
+.header {
+  background: white;
+  border-bottom: 1px solid #eee;
+}
+
+.header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 55px;
+}
+
+.logo {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.btn {
+  background: #facc15;
+  padding: 6px 14px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  color: #222;
+}
+
+.btn:hover {
+  background: #eab308;
+}
+
+/* ================= PREMIUM NAV ================= */
+
+.nav {
+  background: linear-gradient(90deg, #4b1d1d, #6d1f1f);
+  padding: 16px 0;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+}
+
+.nav-inner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  font-weight: 600;
+}
+
+.nav-inner a {
+  position: relative;
+  text-decoration: none;
+  color: #ffb3c6;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.nav-inner a::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  width: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #ffd700, #ff7a00);
+  transform: translateX(-50%);
+  transition: 0.3s;
+}
+
+.nav-inner a:hover {
+  color: #ffd700;
+  transform: translateY(-2px);
+}
+
+.nav-inner a:hover::after {
+  width: 100%;
+}
+
+/* ================= HERO ================= */
+
+.hero {
+  margin: 30px auto;
+}
+
+.hero-box {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #6d1f1f, #a83232);
+  color: white;
+  padding: 40px;
+  border-radius: 14px;
+  text-align: center;
+}
+
+.hero-box h2,
+.hero-box p,
+.hero-btn {
+  position: relative;
+  z-index: 2;
+}
+
+.hero-box h2 {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.hero-box p {
+  opacity: 0.9;
+  margin-bottom: 20px;
+}
+
+.hero-btn {
+  background: #ffd700;
+  padding: 10px 20px;
+  border-radius: 8px;
+  color: #6d1f1f;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.hero-btn:hover {
+  background: #ffcc00;
+}
+
+/* ===== PLANETARY EFFECT ===== */
+
+.planet-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.planet {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.45;
+  animation: float 6s ease-in-out infinite;
+}
+
+.planet1 {
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(circle, #ffd700, #ff7a00);
+  top: 10%;
+  left: 5%;
+}
+
+.planet2 {
+  width: 60px;
+  height: 60px;
+  background: radial-gradient(circle, #fff, #a855f7);
+  bottom: 15%;
+  right: 10%;
+  animation-duration: 8s;
+}
+
+.planet3 {
+  width: 40px;
+  height: 40px;
+  background: radial-gradient(circle, #facc15, #ec4899);
+  top: 55%;
+  left: 70%;
+  animation-duration: 5s;
+}
+
+.star {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: white;
+  border-radius: 50%;
+  animation: twinkle 1.2s infinite alternate;
+}
+
+.star1 { top: 20%; left: 40%; }
+.star2 { bottom: 25%; left: 30%; }
+.star3 { top: 65%; right: 35%; }
+
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes twinkle {
+  from { opacity: 0.3; }
+  to { opacity: 1; }
+}
+
+/* ================= CARDS ================= */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin: 30px auto;
+}
+
+.card-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.card {
+  background: white;
+  padding: 18px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  transition: 0.25s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.15);
+}
+
+.card-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-icon {
+  font-size: 24px;
+}
+
+.card-title {
+  font-weight: 600;
+}
+
+.card-arrow {
+  font-size: 18px;
+  color: #da7d7d;
+}
+
+/* ================= ASTROLOGERS ================= */
+
+.section-title {
+  text-align: center;
+  margin: 40px 0 20px;
+  font-size: 26px;
+  color: #e75353;
+}
+
+.astro-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 22px;
+}
+
+.astro-card {
+  background: linear-gradient(135deg, #c80707, #d8985c);
+  border-radius: 14px;
+  padding: 18px;
+  text-align: center;
+  color: white;
+  box-shadow: 0 8px 18px rgba(255,122,0,0.35);
+  transition: 0.25s;
+}
+
+.astro-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 14px 28px rgba(255,122,0,0.55);
+}
+
+.astro-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 3px solid rgba(255,255,255,0.7);
+}
+
+.astro-exp,
+.astro-desc,
+.astro-phone {
+  color: rgba(255,255,255,0.95);
+}
+
+.astro-exp {
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+.astro-desc {
+  font-size: 14px;
+  margin: 8px 0;
+}
+
+.astro-phone {
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.astro-btn {
+  background: white;
+  color: #ff7a00;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.astro-btn:hover {
+  background: #ffe0b3;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 600px) {
+  .hero-box {
+    padding: 25px;
+  }
+
+  .hero-box h2 {
+    font-size: 20px;
+  }
+
+  .nav-inner {
+    gap: 18px;
+    font-size: 14px;
+  }
+}

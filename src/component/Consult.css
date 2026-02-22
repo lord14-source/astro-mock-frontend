@@ -1,0 +1,87 @@
+.consult-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #faf7f2, #f3ecdf);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 50px 20px;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.consult-page h2 {
+  margin-bottom: 25px;
+  color: #3b2c1a;
+}
+
+.consult-form {
+  width: 100%;
+  max-width: 520px;
+  background: white;
+  padding: 28px;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.consult-form textarea,
+.consult-form select {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+
+.consult-form textarea {
+  min-height: 110px;
+}
+
+.consult-form textarea:focus,
+.consult-form select:focus {
+  outline: none;
+  border-color: #b68b2d;
+}
+
+.consult-form button {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  background: linear-gradient(135deg, #b65b2d, #9e7724);
+  color: white;
+}
+
+.consult-form button:hover {
+  opacity: 0.9;
+}
+
+.reset-btn {
+  background: #eee !important;
+  color: #333 !important;
+}
+
+.error {
+  color: #c0392b;
+  font-size: 13px;
+}
+
+.consult-result {
+  margin-top: 25px;
+  width: 100%;
+  max-width: 520px;
+  background: white;
+  padding: 22px;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+}
+
+.consult-result h3 {
+  color: #3b2c1a;
+}
+
+.consult-result p {
+  margin: 6px 0;
+  font-size: 14px;
+}
