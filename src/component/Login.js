@@ -58,7 +58,7 @@ function Login({ onSuccess }) {
       }
 
       // ⭐ standalone mode
-      window.location = "/dashboard";
+      window.location = "/";
 
     } catch (err) {
 

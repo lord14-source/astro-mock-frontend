@@ -4,6 +4,7 @@ import Address from "./component/Address";
 import Blog from "./component/Blog";
 import Consult from "./component/Consult";
 import Dashboard from "./component/Dashboard";
+import Footer from "./component/Footer";
 import Home from "./component/Home";
 import Kundali from "./component/Kundli";
 import Login from "./component/Login";
@@ -14,7 +15,6 @@ import Register from "./component/Register";
 import "./component/styles.css";
 import Success from "./component/Success";
 import Tarot from "./component/Tarot";
-import Footer from "./component/Footer"
 
 
 
@@ -47,7 +47,7 @@ function App() {
 
         <Route path="/tarot" element={<Tarot />} />
         <Route path="/numerology" element={<Numerology />} />
-        <Route path="/blog" element={<Blog />} />
+        <Route path="/blog" element={<Blog/>} />
          <Route path="/address/:poojaId" element={<Address />} />
           <Route path="/payment" element={<Payment />} />
                   <Route path="/success" element={<Success />} />
