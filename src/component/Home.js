@@ -1,8 +1,8 @@
-import { Link } from "react-router-dom";
-import Sashi from "../image/data_shivam.jpeg";
-import Pic from "../image/jaigurudev.png";
-import Shivam from "../image/sashi_data.jpeg";
-import Footer from "./Footer"; // ✅ ADD THIS
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
+import Footer from "./Footer";
 import Header from "./Header";
 import "./Home.css";
 
@@ -22,63 +22,62 @@ const Card = ({ icon, title, to }) => (
 /* ---------- Astrologer Card ---------- */
 const AstrologerCard = ({ astro }) => (
   <div className="astro-card">
-    <img src={astro.photo} alt={astro.name} />
+    <img
+      src={
+        astro.photo
+          ? `data:image/jpeg;base64,${astro.photo}`
+          : "https://i.pravatar.cc/150?img=3"
+      }
+      alt={astro.name}
+      onError={(e) =>
+        (e.target.src = "https://i.pravatar.cc/150?img=3")
+      }
+    />
     <h3>{astro.name}</h3>
     <p className="astro-exp">{astro.experience}</p>
-    <p className="astro-desc">{astro.desc}</p>
+    <p className="astro-desc">{astro.description}</p>
     <p className="astro-phone">📞 {astro.phone}</p>
     <button className="astro-btn">Consult</button>
   </div>
 );
 
-/* ---------- Dummy Astrologers ---------- */
-const astrologers = [
-  {
-    name: "Astro Gaurav Acharya",
-    photo: Pic,
-    phone: "9876543210",
-    experience: "12 years experience",
-    desc: "Expert in Vedic astrology and kundli analysis."
-  },
-  {
-    name: "Shivam Dubey",
-    photo: Sashi,
-    phone: "9140187806",
-    experience: "8 years experience",
-    desc: "Jyotish Karmkand, Specialist in love & relationship guidance."
-  },
-  {
-    name: "Shashi Kumar Tiwari",
-    photo: Shivam,
-    phone: "9999876401",
-    experience: "15 years experience",
-    desc: "Career and finance astrology expert."
-  },
-  {
-    name: "Astro Kavya",
-    photo: "https://i.pravatar.cc/150?img=9",
-    phone: "9012345678",
-    experience: "6 years experience",
-    desc: "Tarot and intuitive reading specialist."
-  },
-  {
-    name: "Astro Arjun",
-    photo: "https://i.pravatar.cc/150?img=7",
-    phone: "9090909090",
-    experience: "10 years experience",
-    desc: "Marriage and compatibility consultant."
-  },
-  {
-    name: "Astro Neha",
-    photo: Pic,
-    phone: "9765432100",
-    experience: "9 years experience",
-    desc: "Numerology and life path guidance."
-  }
-];
-
 /* ---------- Home ---------- */
 export default function Home() {
+  const [astrologers, setAstrologers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    // 🔐 Redirect if not logged in
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    axios
+      .get("http://localhost:8080/astro/astrologerlist", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        setAstrologers(response.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching astrologers:", error);
+
+        if (error.response && error.response.status === 401) {
+          localStorage.removeItem("token");
+          navigate("/login");
+        }
+
+        setLoading(false);
+      });
+  }, [navigate]);
+
   return (
     <div className="page">
       <Header />
@@ -97,7 +96,7 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero */}
+      {/* Hero Section */}
       <section className="container hero">
         <div className="hero-box">
           <div className="planet-bg">
@@ -118,7 +117,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Quick cards */}
+      {/* Quick Cards */}
       <section className="container cards">
         <Card icon="📞" title="Talk" to="/talk" />
         <Card icon="💬" title="Chat" to="/chat" />
@@ -126,17 +125,27 @@ export default function Home() {
         <Card icon="☸" title="Kundli" to="/kundli" />
       </section>
 
-      {/* Astrologers */}
+      {/* Astrologer Section */}
       <section className="container astro-section">
         <h2 className="section-title">Top Astrologers</h2>
-        <div className="astro-grid">
-          {astrologers.map((astro, i) => (
-            <AstrologerCard key={i} astro={astro} />
-          ))}
-        </div>
+
+        {loading ? (
+          <p style={{ textAlign: "center" }}>Loading astrologers...</p>
+        ) : (
+          <div className="astro-grid">
+            {astrologers.length > 0 ? (
+              astrologers.map((astro) => (
+                <AstrologerCard key={astro.id} astro={astro} />
+              ))
+            ) : (
+              <p style={{ textAlign: "center" }}>
+                No astrologers available.
+              </p>
+            )}
+          </div>
+        )}
       </section>
 
-      {/* Footer */}
       <Footer />
     </div>
   );
