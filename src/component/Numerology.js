@@ -104,7 +104,7 @@ export default function Numerology() {
       <section className="container hero">
         <div className="hero-box">
 
-          <h2>🔢 Premium Numerology Calculator</h2>
+          <h2>🔢  Numerology Calculator</h2>
           <p>AI-powered Vedic numerology from backend engine</p>
 
           <div style={{ marginTop: "25px" }}>
