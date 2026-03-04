@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Footer from "./Footer";
 import Header from "./Header";
 import "./Home.css";
+import  "./Numerology.css";
+
 import LoginModal from "./Login";
 
 const API_URL = "http://localhost:8080/astro/numerology";
@@ -86,7 +89,22 @@ export default function Numerology() {
   return (
     <div className="page">
 
+      {/* Sticky Header */}
       <Header />
+
+      {/* Sticky Navigation */}
+      <nav className="nav">
+        <div className="container nav-inner">
+          <Link to="/">Home</Link>
+          <Link to="/consult">Consult</Link>
+          <Link to="/pooja">Pooja</Link>
+          <Link to="/horoscope">Horoscope</Link>
+          <Link to="/kundli">Kundli</Link>
+          <Link to="/tarot">Tarot</Link>
+          <Link to="/numerology">Numerology</Link>
+          <Link to="/blog">Blog</Link>
+        </div>
+      </nav>
 
       {/* 🔥 Full Screen Loader */}
       {loading && (

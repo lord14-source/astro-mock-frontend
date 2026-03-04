@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   BtnBold,
   BtnBulletList,
@@ -78,6 +79,19 @@ export default function Blog() {
   return (
     <div className="page">
       <Header />
+
+      <nav className="nav">
+              <div className="container nav-inner">
+                <Link to="/">Home</Link>
+                <Link to="/consult">Consult</Link>
+                <Link to="/pooja">Pooja</Link>
+                <Link to="/horoscope">Horoscope</Link>
+                <Link to="/kundli">Kundli</Link>
+                <Link to="/tarot">Tarot</Link>
+                <Link to="/numerology">Numerology</Link>
+                <Link to="/blog">Blog</Link>
+              </div>
+            </nav>
 
       <section className="container hero">
         <div className="hero-box">

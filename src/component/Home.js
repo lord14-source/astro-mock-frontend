@@ -120,7 +120,7 @@ export default function Home() {
       {/* Quick Cards */}
       <section className="container cards">
         <Card icon="📞" title="Talk" to="/talk" />
-        <Card icon="💬" title="Chat" to="/chat" />
+        <Card icon="💬" title="Chat" to="/consult" />
         <Card icon="☀" title="Horoscope" to="/horoscope" />
         <Card icon="☸" title="Kundli" to="/kundli" />
       </section>

@@ -284,3 +284,23 @@
   20% { opacity: 1; }
   100% { opacity: 0.2; }
 }
+header {
+  position: fixed;
+  top: 0;
+  width: 180%;
+  z-index: 999;
+  max-width: 100%;
+  left:1px;
+}
+
+.nav {
+  position: fixed;
+  top: 70px;
+  width: 100%;
+  z-index: 999;
+  left:1px;
+}
+
+.pooja-page {
+  padding-top: 150px; /* push content below fixed header + nav */
+}

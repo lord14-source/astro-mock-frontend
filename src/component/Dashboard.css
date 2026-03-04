@@ -1,0 +1,197 @@
+/* ================= GLOBAL ================= */
+
+.dashboard-container {
+  min-height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #d9d3c9; /* light beige */
+  display: flex;
+  flex-direction: column;
+}
+
+/* ================= TOP PURPLE STRIP ================= */
+
+.dashboard-container::before {
+  content: "";
+  height: 6px;
+  width: 100%;
+  background-color: #5b2dbf;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 999;
+}
+
+/* ================= HEADER ================= */
+
+.dashboard-header {
+  background-color: #0f0f0f;
+  color: #f4c21f;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 40px;
+}
+
+.dashboard-header .logo {
+  font-size: 22px;
+  font-weight: bold;
+  color: #f4c21f;
+}
+
+.dashboard-header .header-buttons {
+  display: flex;
+  gap: 15px;
+}
+
+.dashboard-header .header-buttons button {
+  background-color: #f4c21f;
+  color: #000;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.dashboard-header .header-buttons button:hover {
+  background-color: #e6b800;
+}
+
+/* ================= NAVBAR ================= */
+
+.nav-bar {
+  background-color: #7a1e1e;
+  display: flex;
+  justify-content: center;
+  padding: 14px 0;
+}
+
+.nav-bar .nav-inner {
+  display: flex;
+  gap: 30px;
+}
+
+.nav-bar a {
+  color: #f8d7da;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 6px;
+  transition: 0.3s ease;
+}
+
+.nav-bar a:hover {
+  background-color: rgba(255,255,255,0.15);
+}
+
+.nav-bar a.active-link {
+  background-color: rgba(255,255,255,0.25);
+}
+
+/* ================= MAIN CONTENT ================= */
+
+.dashboard-main {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.dashboard-content {
+  background-color: #ffffff;
+  padding: 35px;
+  border-radius: 18px;
+  width: 100%;
+  max-width: 750px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+/* ================= TEXT ================= */
+
+.welcome-text {
+  color: #5b2dbf;
+  font-size: 26px;
+  margin-bottom: 25px;
+}
+
+.input-section {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.dob-input {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  margin-top: 8px;
+  width: 250px;
+}
+
+/* ================= BUTTON ================= */
+
+.generate-btn {
+  background-color: #f4c21f;
+  color: #000;
+  padding: 12px 26px;
+  border-radius: 10px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 15px;
+  transition: 0.3s ease;
+}
+
+.generate-btn:hover {
+  background-color: #e6b800;
+}
+
+.generate-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ================= CARDS ================= */
+
+.card {
+  background-color: #f9f7ff;
+  padding: 18px;
+  border-radius: 12px;
+  margin-top: 20px;
+}
+
+.prediction-card {
+  background-color: #fff4cc;
+  color: #333;
+  font-weight: 600;
+}
+
+.history-title {
+  margin-top: 30px;
+  font-size: 20px;
+  color: #5b2dbf;
+}
+
+.history-card {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media(max-width:600px) {
+  .dashboard-header {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .nav-bar .nav-inner {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .dob-input {
+    width: 100%;
+  }
+}

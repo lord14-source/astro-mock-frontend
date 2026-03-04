@@ -1,5 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { apiRequest } from "../utils/api";
 import "./Consult.css";
+import Footer from "./Footer";
+import Header from "./Header";
 import LoginModal from "./Login";
 
 export default function Consult() {
@@ -9,7 +13,13 @@ export default function Consult() {
     category: ""
   });
 
-  const [result, setResult] = useState(null);
+  const [messages, setMessages] = useState([
+    {
+      sender: "ai",
+      text: "Hello ✨ I am Astro AI.\nAsk me about Career, Marriage, Finance or Health."
+    }
+  ]);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showLogin, setShowLogin] = useState(false);
@@ -18,9 +28,19 @@ export default function Consult() {
     localStorage.getItem("token")
   );
 
+  const messagesEndRef = useRef(null);
+
+  /* -------------------- Effects -------------------- */
+
   useEffect(() => {
     if (!token) setShowLogin(true);
   }, [token]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
+
+  /* -------------------- Helpers -------------------- */
 
   const authHeader = () => ({
     "Content-Type": "application/json",
@@ -43,12 +63,14 @@ export default function Consult() {
   };
 
   const validate = () => {
-    if (!form.question || !form.category) {
+    if (!form.question.trim() || !form.category) {
       setError("Please complete all fields");
       return false;
     }
     return true;
   };
+
+  /* -------------------- Submit -------------------- */
 
   const submitConsult = async () => {
 
@@ -57,12 +79,17 @@ export default function Consult() {
     if (requireLogin()) return;
     if (!validate()) return;
 
+    const userMessage = {
+      sender: "user",
+      text: form.question
+    };
+
+    setMessages(prev => [...prev, userMessage]);
     setLoading(true);
-    setResult(null);
 
     try {
 
-      const res = await fetch(
+      const data = await apiRequest(
         "http://localhost:8080/astro/consult",
         {
           method: "POST",
@@ -71,95 +98,155 @@ export default function Consult() {
         }
       );
 
-      if (res.status === 403) {
-        setShowLogin(true);
-        throw new Error("Unauthorized");
-      }
+      const aiMessage = {
+        sender: "ai",
+        text: `Advisor: ${data.advisor}
 
-      if (!res.ok) throw new Error();
+Guidance: ${data.guidance}
 
-      const data = await res.json();
-      setResult(data);
+Remedy: ${data.remedy}`
+      };
+
+      setMessages(prev => [...prev, aiMessage]);
+
+      // Reset form
+      setForm({
+        question: "",
+        category: ""
+      });
 
     } catch (err) {
 
-      console.error(err);
-      setError("Consult failed — login again");
+      console.error("API Error:", err);
+
+      if (err.status === 400) {
+        setError(err.message);
+      }
+      else if (err.status === 401) {
+        localStorage.removeItem("token");
+        setToken(null);
+        setShowLogin(true);
+      }
+      else if (err.status === 402) {
+        setError("Premium subscription required 💎");
+      }
+      else if (err.status === 403) {
+        setError("Access denied 🚫");
+      }
+      else {
+        setError("Server error. Please try again later.");
+      }
 
     } finally {
-
       setLoading(false);
     }
   };
 
-  const reset = () => {
-    setForm({ question: "", category: "" });
-    setResult(null);
-    setError("");
+  /* -------------------- Enter Key -------------------- */
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      submitConsult();
+    }
   };
+
+  /* -------------------- UI -------------------- */
 
   return (
 
     <div className="consult-page">
 
-      <h2>Astrology Consult 🔮</h2>
+      <Header />
 
-      <div className="consult-form">
+      <nav className="nav">
+        <div className="container nav-inner">
+          <Link to="/">Home</Link>
+          <Link to="/consult">Consult</Link>
+          <Link to="/pooja">Pooja</Link>
+          <Link to="/horoscope">Horoscope</Link>
+          <Link to="/kundli">Kundli</Link>
+          <Link to="/tarot">Tarot</Link>
+          <Link to="/numerology">Numerology</Link>
+          <Link to="/blog">Blog</Link>
+        </div>
+      </nav>
 
-        <textarea
-          name="question"
-          placeholder="Ask your question..."
-          value={form.question}
-          onChange={update}
-        />
+      <div className="chat-container">
 
-        <select
-          name="category"
-          value={form.category}
-          onChange={update}
-        >
-          <option value="">Select Category</option>
-          <option>Career</option>
-          <option>Marriage</option>
-          <option>Finance</option>
-          <option>Health</option>
-        </select>
+        {/* Messages */}
+        <div className="chat-messages">
+
+          {messages.map((msg, index) => (
+            <div
+              key={index}
+              className={`chat-bubble ${msg.sender}`}
+            >
+              {msg.text}
+            </div>
+          ))}
+
+          {loading && (
+            <div className="chat-bubble ai typing">
+              Astro AI is thinking...
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
+
+        </div>
+
+        {/* Input Section */}
+        <div className="chat-input">
+
+          <textarea
+            name="question"
+            placeholder="Ask Astro AI anything..."
+            value={form.question}
+            onChange={update}
+            onKeyDown={handleKeyDown}
+          />
+
+          <div className="chat-actions">
+
+            <select
+              name="category"
+              value={form.category}
+              onChange={update}
+            >
+              <option value="">Category</option>
+              <option value="Career">Career</option>
+              <option value="Marriage">Marriage</option>
+              <option value="Finance">Finance</option>
+              <option value="Health">Health</option>
+            </select>
+
+            <button
+              onClick={submitConsult}
+              disabled={loading}
+            >
+              {loading ? "..." : "Send"}
+            </button>
+
+          </div>
+
+        </div>
 
         {error && <p className="error">{error}</p>}
 
-        <button onClick={submitConsult} disabled={loading}>
-          {loading ? "Consulting..." : "Consult Now"}
-        </button>
-
-        <button className="reset-btn" onClick={reset}>
-          Reset
-        </button>
-
       </div>
 
-      {result && (
-
-        <div className="consult-result">
-
-          <h3>Your Guidance</h3>
-
-          <p><b>Advisor:</b> {result.advisor}</p>
-          <p><b>Guidance:</b> {result.guidance}</p>
-          <p><b>Remedy:</b> {result.remedy}</p>
-
-        </div>
-      )}
-
       {showLogin && (
-
         <LoginModal
           onClose={() => {
-            setToken(localStorage.getItem("token"));
+            const savedToken = localStorage.getItem("token");
+            setToken(savedToken);
             setShowLogin(false);
           }}
         />
-
       )}
+
+      <Footer />
 
     </div>
   );

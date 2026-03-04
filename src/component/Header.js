@@ -1,11 +1,23 @@
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 function Header() {
   const navigate = useNavigate();
+
+  const [name, setName] = useState(null);
   const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    const storedName = localStorage.getItem("name");
+    if (storedName) {
+      setName(storedName);
+    }
+  }, [token]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("name");
+    setName(null);
     navigate("/");
     window.location.reload();
   };
@@ -23,8 +35,8 @@ function Header() {
     alignItems: "center",
     justifyContent: "center",
     fontSize: "14px",
-    width: "120px", // ✅ fixed width (all identical)
-    marginTop:"10px"
+    width: "120px",
+    marginTop: "10px"
   };
 
   return (
@@ -60,7 +72,8 @@ function Header() {
         </Link>
 
         {/* Right Section */}
-        <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: "15px", alignItems: "center" }}>
+          
           {!token ? (
             <>
               <Link to="/login" style={authButtonStyle}>
@@ -73,7 +86,14 @@ function Header() {
             </>
           ) : (
             <>
-              <Link to="/dashboard" style={authButtonStyle}>
+              {/* 👇 Greeting */}
+              {name && (
+                <span style={{ color: "#facc15", fontWeight: "600" }}>
+                  Hi, {name} 👋
+                </span>
+              )}
+
+              <Link to="/" style={authButtonStyle}>
                 Dashboard
               </Link>
 
