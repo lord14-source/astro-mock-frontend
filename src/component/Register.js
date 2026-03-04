@@ -76,7 +76,7 @@ function Register() {
       setSuccess("✅ Registration successful!");
 
       setTimeout(() => {
-        window.location = "/";
+        window.location = "/login";
       }, 1500);
 
     } catch (err) {

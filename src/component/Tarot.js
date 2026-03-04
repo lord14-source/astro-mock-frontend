@@ -1,70 +1,121 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { apiRequest } from "../utils/api";
 import Footer from "./Footer";
 import Header from "./Header";
+import LoginModal from "./Login";
 import "./Tarot.css";
-
-/* Tarot deck with built-in SVG art */
-const tarotDeck = [
-  {
-    name: "The Fool",
-    meaning: "New beginnings, leap of faith, adventure.",
-    icon: "🌄"
-  },
-  {
-    name: "The Magician",
-    meaning: "Manifestation, power, inspired action.",
-    icon: "✨"
-  },
-  {
-    name: "The High Priestess",
-    meaning: "Intuition, inner wisdom, mystery.",
-    icon: "🌙"
-  },
-  {
-    name: "The Empress",
-    meaning: "Abundance, nurturing, creativity.",
-    icon: "🌸"
-  },
-  {
-    name: "The Emperor",
-    meaning: "Authority, structure, leadership.",
-    icon: "👑"
-  },
-  {
-    name: "The Lovers",
-    meaning: "Union, harmony, important choices.",
-    icon: "❤️"
-  }
-];
+import Toast from "./Toast";
 
 export default function Tarot() {
 
-  const [card, setCard] = useState(null);
+  const [cards, setCards] = useState([]);
   const [flipped, setFlipped] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [aiMessage, setAiMessage] = useState("");
 
-  const drawCard = () => {
-    if (card) return;
+  const [token, setToken] = useState(
+    localStorage.getItem("token")
+  );
 
-    const randomCard =
-      tarotDeck[Math.floor(Math.random() * tarotDeck.length)];
+  const [showLogin, setShowLogin] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
 
-    setCard(randomCard);
+  /* -------------------- Effects -------------------- */
 
-    setTimeout(() => {
-      setFlipped(true);
-    }, 300);
+  useEffect(() => {
+    if (!token) setShowLogin(true);
+  }, [token]);
+
+  useEffect(() => {
+    if (flipped) {
+      const audio = new Audio(process.env.PUBLIC_URL + "/flip.wav");
+      audio.play().catch(() => {});
+    }
+  }, [flipped]);
+
+  /* -------------------- Helpers -------------------- */
+
+  const authHeader = () => ({
+    "Content-Type": "application/json",
+    Authorization: "Bearer " + token
+  });
+
+  const requireLogin = () => {
+    if (!token) {
+      setShowLogin(true);
+      return true;
+    }
+    return false;
   };
+
+  /* -------------------- Draw Cards -------------------- */
+
+  const drawCards = async () => {
+
+    if (requireLogin()) return;
+    if (cards.length > 0) return;
+
+    setLoading(true);
+    setAiMessage("");
+
+    try {
+
+      const data = await apiRequest(
+        "http://localhost:8080/astro/tarot",
+        {
+          method: "POST",
+          headers: authHeader()
+        }
+      );
+
+      setTimeout(() => {
+        setCards(data.cards);
+        setFlipped(true);
+        setLoading(false);
+      }, 1200);
+
+      setAiMessage(data.interpretation);
+
+    } catch (err) {
+
+      console.error("Tarot API Error:", err);
+
+      if (err.status === 401) {
+        localStorage.removeItem("token");
+        setToken(null);
+        setShowLogin(true);
+        setToastMessage(err.message || "Login required");
+      }
+      else if (err.status === 402) {
+        setToastMessage(err.message || "Premium subscription required 💎");
+      }
+      else if (err.status === 403) {
+        setToastMessage(err.message || "Access denied 🚫");
+      }
+      else {
+        setToastMessage(err.message || "Server error. Try again.");
+      }
+
+      setLoading(false);
+    }
+  };
+
+  /* -------------------- Reset -------------------- */
 
   const reset = () => {
     setFlipped(false);
     setTimeout(() => {
-      setCard(null);
+      setCards([]);
+      setAiMessage("");
     }, 500);
   };
 
+  /* -------------------- UI -------------------- */
+
   return (
-    <div className="page tarot-page">
+
+    <div className="tarot-page cosmic-bg">
 
       <Header />
 
@@ -81,43 +132,78 @@ export default function Tarot() {
         </div>
       </nav>
 
-      <h2>Tarot Reading 🔮</h2>
+      <h2 className="title-glow">🔮 Divine Tarot Reading</h2>
 
-      {!card && (
-        <button className="draw-btn" onClick={drawCard}>
-          Draw a Card
+      {cards.length === 0 && (
+        <button
+          className="draw-btn"
+          onClick={drawCards}
+          disabled={loading}
+        >
+          {loading ? "Summoning Cosmic Energies..." : "Reveal My Destiny"}
         </button>
       )}
 
-      {card && (
-        <div className={`card-container ${flipped ? "flip" : ""}`}>
-          <div className="tarot-card">
+      <div className="spread">
 
-            {/* Front */}
-            <div className="card-front">
-              ✦ TAROT ✦
-            </div>
+        {cards.map((card, index) => (
+          <div key={index} className={`card-container ${flipped ? "flip" : ""}`}>
+            <div className="tarot-card">
 
-            {/* Back */}
-            <div className="card-back">
-              <div className="tarot-icon">
-                {card.icon}
+              <div className="card-front">✦ TAROT ✦</div>
+
+              <div className={`card-back ${card.reversed ? "reversed" : ""}`}>
+
+                <div className="tarot-icon">🔮</div>
+
+                <h3>{card.name}</h3>
+
+                <p>{card.meaning}</p>
+
+                <small>
+                  {index === 0 && "Past"}
+                  {index === 1 && "Present"}
+                  {index === 2 && "Future"}
+                  {card.reversed && " • Reversed"}
+                </small>
+
               </div>
-              <h3>{card.name}</h3>
-              <p>{card.meaning}</p>
-            </div>
 
+            </div>
           </div>
+        ))}
+
+      </div>
+
+      {aiMessage && (
+        <div className="ai-interpretation glass">
+          ✨ {aiMessage}
         </div>
       )}
 
-      {card && (
+      {cards.length > 0 && (
         <button className="reset-btn" onClick={reset}>
           Draw Again
         </button>
       )}
 
+      {showLogin && (
+        <LoginModal
+          onClose={() => {
+            const savedToken = localStorage.getItem("token");
+            setToken(savedToken);
+            setShowLogin(false);
+          }}
+        />
+      )}
+
+      <Toast
+        message={toastMessage}
+        onClose={() => setToastMessage("")}
+      />
+
       <Footer />
+
     </div>
   );
 }

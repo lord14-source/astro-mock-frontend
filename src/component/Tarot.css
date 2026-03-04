@@ -225,3 +225,199 @@ body {
   0%,100% { transform: translateY(0px); }
   50% { transform: translateY(-8px); }
 }
+.cosmic-bg {
+  min-height: 100vh;
+  background: radial-gradient(circle at top, #1b0033, #000814);
+  color: white;
+  text-align: center;
+  padding-bottom: 60px;
+  animation: stars 20s linear infinite;
+}
+
+@keyframes stars {
+  from { background-position: 0 0; }
+  to { background-position: 1000px 1000px; }
+}
+
+.spread {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 40px;
+  flex-wrap: wrap;
+}
+
+.card-container {
+  perspective: 1000px;
+}
+
+.tarot-card {
+  width: 220px;
+  height: 320px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.8s;
+}
+
+.flip .tarot-card {
+  transform: rotateY(180deg);
+}
+
+.card-front,
+.card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.card-front {
+  background: linear-gradient(135deg, #4b0082, #6a0dad);
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.card-back {
+  background: linear-gradient(135deg, #de7534, #6c5ce7);
+  transform: rotateY(180deg);
+  padding: 20px;
+}
+
+.glow {
+  box-shadow: 0 0 25px rgba(255,255,255,0.4);
+}
+
+.draw-btn,
+.reset-btn {
+  padding: 12px 30px;
+  margin-top: 30px;
+  border-radius: 30px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  background: #6c5ce7;
+  color: white;
+}
+
+.ai-interpretation {
+  margin-top: 30px;
+  padding: 20px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 15px;
+  width: 70%;
+  margin-left: auto;
+  margin-right: auto;
+}
+.cosmic-bg {
+  min-height: 100vh;
+  background: radial-gradient(circle at center, #0f001f, #000814);
+  overflow: hidden;
+  color: white;
+  text-align: center;
+  padding-bottom: 60px;
+}
+
+/* Star Particles */
+.cosmic-bg::before {
+  content: "";
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  background: url("https://www.transparenttextures.com/patterns/stardust.png");
+  animation: moveStars 60s linear infinite;
+  opacity: 0.3;
+}
+
+@keyframes moveStars {
+  from { transform: translate(0,0); }
+  to { transform: translate(-500px, -500px); }
+}
+
+.title-glow {
+  text-shadow: 0 0 20px #b388ff;
+}
+
+.spread {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 40px;
+  flex-wrap: wrap;
+}
+
+.card-container {
+  perspective: 1200px;
+}
+
+.tarot-card {
+  width: 230px;
+  height: 330px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 1s;
+}
+
+.flip .tarot-card {
+  transform: rotateY(180deg);
+}
+
+.card-front,
+.card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.card-front {
+  background: linear-gradient(135deg, #5f0a87, #a4508b);
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.card-back {
+  background: linear-gradient(135deg, #ff6a00, #ee0979);
+  transform: rotateY(180deg);
+}
+
+.reversed {
+  transform: rotateY(180deg) rotate(180deg);
+}
+
+.tarot-icon {
+  font-size: 50px;
+  margin-bottom: 10px;
+}
+
+.draw-btn,
+.reset-btn {
+  padding: 14px 35px;
+  border-radius: 40px;
+  border: none;
+  margin-top: 30px;
+  background: #7b2ff7;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(123,47,247,0.7);
+}
+
+.glass {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(15px);
+  padding: 20px;
+  margin: 30px auto;
+  border-radius: 15px;
+  width: 70%;
+}

@@ -19,14 +19,24 @@ export default function Kundli() {
   const [showLogin, setShowLogin] = useState(false);
   const [token, setToken] = useState(localStorage.getItem("token"));
 
-  // ---------- RESET ON MOUNT ----------
+  // Reset on mount
   useEffect(() => {
     setForm({ name: "", dob: "", time: "", place: "" });
     setResult(null);
     setError("");
   }, []);
 
-  // ---------- AUTH ----------
+  // Auto hide error toaster
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError("");
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
+  // Show login if no token
   useEffect(() => {
     if (!token) setShowLogin(true);
   }, [token]);
@@ -44,22 +54,22 @@ export default function Kundli() {
     return false;
   };
 
-  // ---------- FORM ----------
   const update = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const validate = () => {
-    if (!form.name || !form.dob || !form.time || !form.place) {
-      setError("All birth details are required");
+    if (!form.name.trim() || !form.dob || !form.time || !form.place.trim()) {
+      setError("⚠ All birth details are required");
       return false;
     }
     return true;
   };
 
-  // ---------- GENERATE KUNDLI ----------
+  // Generate Kundli
   const generateKundli = async () => {
     setError("");
+
     if (requireLogin()) return;
     if (!validate()) return;
 
@@ -77,9 +87,11 @@ export default function Kundli() {
         setShowLogin(true);
         throw new Error("Unauthorized");
       }
+
       if (!res.ok) throw new Error("Request failed");
 
       const data = await res.json();
+
       setResult({
         zodiac: data.zodiac,
         nakshatra: data.nakshatra,
@@ -89,15 +101,16 @@ export default function Kundli() {
 
     } catch (err) {
       console.error(err);
-      setError("Authentication failed — login again");
+      setError("❌ Authentication failed — please login again");
     } finally {
       setLoading(false);
     }
   };
 
-  // ---------- DOWNLOAD PDF ----------
+  // Download PDF
   const downloadPdf = async () => {
     setError("");
+
     if (requireLogin()) return;
     if (!validate()) return;
 
@@ -112,10 +125,12 @@ export default function Kundli() {
         setShowLogin(true);
         throw new Error("Unauthorized");
       }
-      if (!res.ok) throw new Error("PDF generation failed");
+
+      if (!res.ok) throw new Error("PDF failed");
 
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
+
       const a = document.createElement("a");
       a.href = url;
       a.download = `${form.name || "kundli"}.pdf`;
@@ -126,18 +141,16 @@ export default function Kundli() {
 
     } catch (err) {
       console.error(err);
-      setError("PDF download failed");
+      setError("❌ PDF download failed");
     }
   };
 
-  // ---------- RESET ----------
   const reset = () => {
     setForm({ name: "", dob: "", time: "", place: "" });
     setResult(null);
     setError("");
   };
 
-  // ---------- UI ----------
   return (
     <div className="kundli-page">
       <Header />
@@ -163,18 +176,25 @@ export default function Kundli() {
         <input type="time" name="time" value={form.time} onChange={update} />
         <input name="place" placeholder="Birth Place" value={form.place} onChange={update} />
 
-        {error && <p className="error">{error}</p>}
-
         <button onClick={generateKundli} disabled={loading}>
           {loading ? "Generating..." : "Generate Kundli"}
         </button>
+
         <button onClick={downloadPdf} disabled={loading}>
           Download PDF
         </button>
+
         <button className="reset-btn" onClick={reset}>
           Reset
         </button>
       </div>
+
+      {/* Bottom Center Toaster */}
+      {error && (
+        <div className="bottom-toast">
+          {error}
+        </div>
+      )}
 
       {result && (
         <div className="kundli-result">

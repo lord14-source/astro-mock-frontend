@@ -15,9 +15,15 @@ export default function Pooja() {
   const [error, setError] = useState("");
   const [showLogin, setShowLogin] = useState(false);
 
-  const [token, setToken] = useState(
-    localStorage.getItem("token")
-  );
+  const [token, setToken] = useState(localStorage.getItem("token"));
+
+  /* 🔴 Auto hide toaster */
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(""), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
   /* ============================= */
   /* Fetch Data */
@@ -33,6 +39,12 @@ export default function Pooja() {
     fetchPoojas();
 
   }, [token]);
+
+  const handleUnauthorized = () => {
+    localStorage.removeItem("token");
+    setToken(null);
+    setShowLogin(true);
+  };
 
   const fetchPoojas = async () => {
 
@@ -58,19 +70,24 @@ export default function Pooja() {
         }
       );
 
-      if (res.status === 403) {
-        setShowLogin(true);
+      if (res.status === 401 || res.status === 403) {
+        handleUnauthorized();
         throw new Error("Unauthorized");
       }
 
-      if (!res.ok) throw new Error();
+      if (!res.ok) throw new Error("API Failed");
 
       const data = await res.json();
+
+      if (!Array.isArray(data)) {
+        throw new Error("Invalid API response");
+      }
+
       setPoojas(data);
 
     } catch (err) {
       console.error(err);
-      setError("Failed to load pooja list");
+      setError("❌ Failed to load pooja list");
     } finally {
       setLoading(false);
     }
@@ -97,10 +114,8 @@ export default function Pooja() {
   return (
     <div className="pooja-page">
 
-      {/* Sticky Header */}
       <Header />
 
-      {/* Sticky Navigation */}
       <nav className="nav">
         <div className="container nav-inner">
           <Link to="/">Home</Link>
@@ -127,11 +142,7 @@ export default function Pooja() {
         </div>
       )}
 
-      {/* Page Title */}
       <h2>Divine Seva Offerings 🌸</h2>
-
-      {/* Error */}
-      {error && <p className="error">{error}</p>}
 
       {/* Grid */}
       <div className="pooja-grid">
@@ -176,6 +187,13 @@ export default function Pooja() {
         ))}
 
       </div>
+
+      {/* 🔴 Bottom Toaster */}
+      {error && (
+        <div className="bottom-toast">
+          {error}
+        </div>
+      )}
 
       {/* Login Modal */}
       {showLogin && (

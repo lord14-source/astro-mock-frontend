@@ -4,14 +4,16 @@ import "./Dashboard.css";
 import Footer from "./Footer";
 import Header from "./Header";
 import LoginModal from "./Login";
+import Toast from "./Toast";
 
 function Dashboard() {
+
   const [dob, setDob] = useState("");
   const [prediction, setPrediction] = useState("");
   const [history, setHistory] = useState([]);
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
 
   const email = localStorage.getItem("email");
   const token = localStorage.getItem("token");
@@ -26,9 +28,10 @@ function Dashboard() {
 
   const logout = () => {
     localStorage.clear();
-    setShowLogin(true);
     setPrediction("");
     setHistory([]);
+    setShowLogin(true);
+    setToastMessage("Logged out successfully");
   };
 
   const authHeader = () => ({
@@ -39,20 +42,27 @@ function Dashboard() {
   const requireLogin = () => {
     if (!token) {
       setShowLogin(true);
+      setToastMessage("Please login to continue");
       return true;
     }
     return false;
   };
 
+  const handle401 = () => {
+    localStorage.clear();
+    setShowLogin(true);
+    setToastMessage("Session expired. Please login again.");
+  };
+
   const generate = async () => {
     if (requireLogin()) return;
+
     if (!dob) {
-      setError("Please select your Date of Birth");
+      setToastMessage("Please select your Date of Birth");
       return;
     }
 
     setLoading(true);
-    setError("");
 
     try {
       const res = await fetch("http://localhost:8080/astro/generate", {
@@ -61,17 +71,23 @@ function Dashboard() {
         body: JSON.stringify({ dob }),
       });
 
-      if (!res.ok) {
-        const errMsg = await res.text();
-        throw new Error(errMsg || "Server Error");
+      if (res.status === 401) {
+        handle401();
+        return;
       }
 
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        throw new Error(data?.message || "Failed to generate horoscope");
+      }
+
       setPrediction(data.prediction || "");
       loadHistory();
+
     } catch (err) {
       console.error("Generate Error:", err);
-      setError("Failed to generate horoscope. Please try again.");
+      setToastMessage(err.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }
@@ -85,16 +101,22 @@ function Dashboard() {
         headers: authHeader(),
       });
 
-      if (!res.ok) {
-        const errMsg = await res.text();
-        throw new Error(errMsg || "Server Error");
+      if (res.status === 401) {
+        handle401();
+        return;
       }
 
-      const data = await res.json();
+      const data = await res.json().catch(() => []);
+
+      if (!res.ok) {
+        throw new Error("Failed to load history");
+      }
+
       setHistory(Array.isArray(data) ? data : []);
+
     } catch (err) {
       console.error("History Error:", err);
-      setError("Failed to load history.");
+      setToastMessage("Failed to load history.");
       setHistory([]);
     }
   };
@@ -102,11 +124,9 @@ function Dashboard() {
   return (
     <div className="dashboard-container">
 
-      {/* Header */}
-     <Header/>      
+      <Header />
 
-      {/* Navbar */}
-      <nav className="nav-bar" style={{marginTop:"70px"}}>
+      <nav className="nav-bar" style={{ marginTop: "70px" }}>
         <div className="nav-inner">
           <Link to="/">Home</Link>
           <Link to="/consult">Consult</Link>
@@ -119,10 +139,12 @@ function Dashboard() {
         </div>
       </nav>
 
-      {/* Main Content */}
       <div className="dashboard-main">
         <div className="dashboard-content">
-          <h1 className="welcome-text">Welcome {email || "Guest"}</h1>
+
+          <h1 className="welcome-text">
+            Welcome {email || "Guest"}
+          </h1>
 
           <div className="input-section">
             <label htmlFor="dob">Select Date of Birth:</label>
@@ -130,7 +152,7 @@ function Dashboard() {
               type="date"
               id="dob"
               value={dob}
-              onChange={e => setDob(e.target.value)}
+              onChange={(e) => setDob(e.target.value)}
               className="dob-input"
             />
           </div>
@@ -143,8 +165,6 @@ function Dashboard() {
             {loading ? "Generating..." : "Generate Horoscope"}
           </button>
 
-          {error && <p className="error-text">{error}</p>}
-
           {prediction && (
             <div className="card prediction-card">
               ✨ {prediction}
@@ -152,13 +172,17 @@ function Dashboard() {
           )}
 
           <h2 className="history-title">History</h2>
+
           <div className="card history-card">
             {history.length === 0 ? (
               <p>No history yet</p>
             ) : (
-              history.map(h => <p key={h.id}>✨ {h.prediction}</p>)
+              history.map((h) => (
+                <p key={h.id}>✨ {h.prediction}</p>
+              ))
             )}
           </div>
+
         </div>
       </div>
 
@@ -170,6 +194,11 @@ function Dashboard() {
           }}
         />
       )}
+
+      <Toast
+        message={toastMessage}
+        onClose={() => setToastMessage("")}
+      />
 
       <Footer />
     </div>

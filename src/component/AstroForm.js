@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Toast from "./Toast";
 
 function AstroForm() {
 
@@ -10,22 +11,51 @@ function AstroForm() {
   });
 
   const [result, setResult] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
 
-  const handleChange = e => {
-    setForm({...form, [e.target.name]: e.target.value});
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const submit = async e => {
+  const submit = async (e) => {
     e.preventDefault();
 
-    const res = await fetch("http://localhost:8080/astro/generate", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(form)
-    });
+    // ✅ Manual Validation
+    if (
+      !form.name.trim() ||
+      !form.dob ||
+      !form.tob.trim() ||
+      !form.location.trim()
+    ) {
+      setToastMessage("Please fill all required details");
+      return;
+    }
 
-    const data = await res.json();
-    setResult(data.prediction);
+    setLoading(true);
+    setResult("");
+
+    try {
+      const res = await fetch("http://localhost:8080/astro/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form)
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        throw new Error(data?.message || "Failed to generate horoscope");
+      }
+
+      setResult(data.prediction);
+
+    } catch (err) {
+      console.error("Horoscope Error:", err);
+      setToastMessage(err.message || "Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -33,19 +63,37 @@ function AstroForm() {
 
       <form onSubmit={submit}>
 
-        <input name="name" placeholder="Name"
-          onChange={handleChange} required />
+        <input
+          name="name"
+          placeholder="Name"
+          value={form.name}
+          onChange={handleChange}
+        />
 
-        <input type="date" name="dob"
-          onChange={handleChange} required />
+        <input
+          type="date"
+          name="dob"
+          value={form.dob}
+          onChange={handleChange}
+        />
 
-        <input name="tob" placeholder="Time of birth"
-          onChange={handleChange} required />
+        <input
+          name="tob"
+          placeholder="Time of birth (HH:MM)"
+          value={form.tob}
+          onChange={handleChange}
+        />
 
-        <input name="location" placeholder="Location"
-          onChange={handleChange} required />
+        <input
+          name="location"
+          placeholder="Location"
+          value={form.location}
+          onChange={handleChange}
+        />
 
-        <button>Generate Horoscope</button>
+        <button type="submit" disabled={loading}>
+          {loading ? "Generating..." : "Generate Horoscope"}
+        </button>
 
       </form>
 
@@ -54,6 +102,12 @@ function AstroForm() {
           🔮 {result}
         </div>
       )}
+
+      {/* 🔴 Toast */}
+      <Toast
+        message={toastMessage}
+        onClose={() => setToastMessage("")}
+      />
 
     </div>
   );

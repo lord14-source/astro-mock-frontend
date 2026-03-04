@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import LoginModal from "./Login";
 import "./PaymentPage.css";
@@ -10,23 +10,43 @@ const PaymentPage = () => {
 
   const [paymentMethod, setPaymentMethod] = useState("CARD");
   const [showLogin, setShowLogin] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const token = localStorage.getItem("token");
 
-  const handleStripePayment = async () => {
+  /* 🔴 Auto hide toaster */
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(""), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
+  const requireLogin = () => {
     if (!token) {
       setShowLogin(true);
-      return;
+      return true;
     }
+    return false;
+  };
+
+  /* 💳 STRIPE PAYMENT */
+  const handleStripePayment = async () => {
+
+    setError("");
+
+    if (requireLogin()) return;
 
     try {
+
+      setLoading(true);
 
       const response = await axios.post(
         "http://localhost:8080/astro/checkout",
         {
-          name: "Rose Bouquet",
-          currency: "usd",
+          name: "Pooja Booking",
+          currency: "inr",
           amount: 1000,
           quantity: 1,
         },
@@ -41,7 +61,7 @@ const PaymentPage = () => {
       const sessionUrl = response.data.sessionUrl;
 
       if (!sessionUrl) {
-        alert("Session URL missing");
+        setError("❌ Session URL missing");
         return;
       }
 
@@ -49,20 +69,23 @@ const PaymentPage = () => {
 
     } catch (error) {
 
-      if (error.response?.status === 403) {
+      if (error.response?.status === 401 || error.response?.status === 403) {
         setShowLogin(true);
       } else {
-        alert("Payment failed");
+        setError("❌ Payment failed. Please try again.");
       }
+
+    } finally {
+      setLoading(false);
     }
   };
 
+  /* 🚚 CASH ON DELIVERY */
   const handleCOD = () => {
 
-    if (!token) {
-      setShowLogin(true);
-      return;
-    }
+    setError("");
+
+    if (requireLogin()) return;
 
     navigate("/success");
   };
@@ -97,8 +120,10 @@ const PaymentPage = () => {
             <button
               className="payment-btn"
               onClick={handleStripePayment}
+              disabled={loading}
+              style={{ opacity: loading ? 0.6 : 1 }}
             >
-              Pay ₹1000
+              {loading ? "Processing..." : "Pay ₹1000"}
             </button>
           )}
         </div>
@@ -126,6 +151,13 @@ const PaymentPage = () => {
         </div>
 
       </div>
+
+      {/* 🔴 Bottom Center Toaster */}
+      {error && (
+        <div className="bottom-toast">
+          {error}
+        </div>
+      )}
 
       {showLogin && (
         <LoginModal

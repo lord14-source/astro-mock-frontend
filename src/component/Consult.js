@@ -5,6 +5,7 @@ import "./Consult.css";
 import Footer from "./Footer";
 import Header from "./Header";
 import LoginModal from "./Login";
+import Toast from "./Toast";
 
 export default function Consult() {
 
@@ -21,7 +22,10 @@ export default function Consult() {
   ]);
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+
+  // 🔥 Toast state (only message needed now)
+  const [toastMessage, setToastMessage] = useState("");
+
   const [showLogin, setShowLogin] = useState(false);
 
   const [token, setToken] = useState(
@@ -64,7 +68,7 @@ export default function Consult() {
 
   const validate = () => {
     if (!form.question.trim() || !form.category) {
-      setError("Please complete all fields");
+      setToastMessage("Please complete all fields");
       return false;
     }
     return true;
@@ -73,8 +77,6 @@ export default function Consult() {
   /* -------------------- Submit -------------------- */
 
   const submitConsult = async () => {
-
-    setError("");
 
     if (requireLogin()) return;
     if (!validate()) return;
@@ -109,7 +111,6 @@ Remedy: ${data.remedy}`
 
       setMessages(prev => [...prev, aiMessage]);
 
-      // Reset form
       setForm({
         question: "",
         category: ""
@@ -119,22 +120,23 @@ Remedy: ${data.remedy}`
 
       console.error("API Error:", err);
 
-      if (err.status === 400) {
-        setError(err.message);
-      }
-      else if (err.status === 401) {
+      if (err.status === 401) {
         localStorage.removeItem("token");
         setToken(null);
         setShowLogin(true);
+        setToastMessage(err.message || "Login required");
       }
       else if (err.status === 402) {
-        setError("Premium subscription required 💎");
+        setToastMessage(err.message || "Premium subscription required 💎");
       }
       else if (err.status === 403) {
-        setError("Access denied 🚫");
+        setToastMessage(err.message || "Access denied 🚫");
+      }
+      else if (err.status === 400) {
+        setToastMessage(err.message || "Invalid input");
       }
       else {
-        setError("Server error. Please try again later.");
+        setToastMessage(err.message || "Server error. Please try again later.");
       }
 
     } finally {
@@ -232,8 +234,6 @@ Remedy: ${data.remedy}`
 
         </div>
 
-        {error && <p className="error">{error}</p>}
-
       </div>
 
       {showLogin && (
@@ -245,6 +245,12 @@ Remedy: ${data.remedy}`
           }}
         />
       )}
+
+      {/* 🔴 Bottom Center Red Toast */}
+      <Toast
+        message={toastMessage}
+        onClose={() => setToastMessage("")}
+      />
 
       <Footer />
 

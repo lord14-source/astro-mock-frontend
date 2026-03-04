@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Footer from "./Footer";
 import Header from "./Header";
 import "./Home.css";
+import Toast from "./Toast";
 
 /* ---------- Compact Card ---------- */
 const Card = ({ icon, title, to }) => (
@@ -43,40 +44,52 @@ const AstrologerCard = ({ astro }) => (
 
 /* ---------- Home ---------- */
 export default function Home() {
+
   const [astrologers, setAstrologers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [toastMessage, setToastMessage] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
+    fetchAstrologers();
+  }, []);
+
+  const fetchAstrologers = async () => {
     const token = localStorage.getItem("token");
 
-    // 🔐 Redirect if not logged in
     if (!token) {
-      navigate("/login");
+      setToastMessage("Please login to continue");
+      setLoading(false);
       return;
     }
 
-    axios
-      .get("http://localhost:8080/astro/astrologerlist", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((response) => {
-        setAstrologers(response.data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching astrologers:", error);
-
-        if (error.response && error.response.status === 401) {
-          localStorage.removeItem("token");
-          navigate("/login");
+    try {
+      const response = await axios.get(
+        "http://localhost:8080/astro/astrologerlist",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
+      );
 
-        setLoading(false);
-      });
-  }, [navigate]);
+      setAstrologers(response.data || []);
+
+    } catch (error) {
+      console.error("Error fetching astrologers:", error);
+
+      if (error.response?.status === 401) {
+        localStorage.clear();
+        setToastMessage("Session expired. Please login again.");
+        navigate("/login");
+      } else {
+        setToastMessage("Failed to load astrologers.");
+      }
+
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="page">
@@ -111,7 +124,7 @@ export default function Home() {
           <h2>Ancient Vedic Guidance</h2>
           <p>Horoscope insights & kundli wisdom for modern life.</p>
 
-          <Link to="/login" className="hero-btn">
+          <Link to="/consult" className="hero-btn">
             Start Free Chat
           </Link>
         </div>
@@ -145,6 +158,11 @@ export default function Home() {
           </div>
         )}
       </section>
+
+      <Toast
+        message={toastMessage}
+        onClose={() => setToastMessage("")}
+      />
 
       <Footer />
     </div>

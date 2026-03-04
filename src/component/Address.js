@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "./Address.css";
+import Toast from "./Toast";
 
 export default function Address() {
+
   const navigate = useNavigate();
   const { poojaId } = useParams();
 
@@ -15,7 +17,7 @@ export default function Address() {
   });
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [toastMessage, setToastMessage] = useState("");
 
   const token = localStorage.getItem("token");
 
@@ -25,8 +27,37 @@ export default function Address() {
 
   const submit = async (e) => {
     e.preventDefault();
+
+    // ✅ Manual Validation
+    if (
+      !form.name.trim() ||
+      !form.phone.trim() ||
+      !form.address.trim() ||
+      !form.city.trim() ||
+      !form.pincode.trim()
+    ) {
+      setToastMessage("Please fill all required details");
+      return;
+    }
+
+    // Phone validation (10 digits)
+    if (!/^[0-9]{10}$/.test(form.phone)) {
+      setToastMessage("Enter valid 10-digit phone number");
+      return;
+    }
+
+    // Pincode validation (6 digits)
+    if (!/^[0-9]{6}$/.test(form.pincode)) {
+      setToastMessage("Enter valid 6-digit pincode");
+      return;
+    }
+
+    if (!token) {
+      setToastMessage("Please login to continue");
+      return;
+    }
+
     setLoading(true);
-    setError("");
 
     try {
       const res = await fetch(
@@ -41,18 +72,18 @@ export default function Address() {
         }
       );
 
+      const data = await res.json().catch(() => null);
+
       if (!res.ok) {
-        throw new Error("Failed to save booking");
+        throw new Error(data?.message || "Failed to save booking");
       }
 
-      const bookingData = await res.json();
-
-      // Navigate to payment page with saved booking
-      navigate("/payment", { state: bookingData });
+      // ✅ Navigate to payment page
+      navigate("/payment", { state: data });
 
     } catch (err) {
-      console.error(err);
-      setError("Something went wrong. Please try again.");
+      console.error("Address Save Error:", err);
+      setToastMessage(err.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -60,13 +91,12 @@ export default function Address() {
 
   return (
     <div className="address-page">
+
       <div className="address-card">
         <h2>🌸 Enter Your Address</h2>
         <p className="subtitle">
           Please provide your details for Pooja booking
         </p>
-
-        {error && <p className="error">{error}</p>}
 
         <form onSubmit={submit} className="address-form">
 
@@ -77,7 +107,6 @@ export default function Address() {
               placeholder="Full Name"
               value={form.name}
               onChange={update}
-              required
             />
           </div>
 
@@ -88,7 +117,6 @@ export default function Address() {
               placeholder="Phone Number"
               value={form.phone}
               onChange={update}
-              required
             />
           </div>
 
@@ -99,7 +127,6 @@ export default function Address() {
               rows="3"
               value={form.address}
               onChange={update}
-              required
             />
           </div>
 
@@ -110,7 +137,6 @@ export default function Address() {
               placeholder="City"
               value={form.city}
               onChange={update}
-              required
             />
             <input
               type="text"
@@ -118,7 +144,6 @@ export default function Address() {
               placeholder="Pincode"
               value={form.pincode}
               onChange={update}
-              required
             />
           </div>
 
@@ -132,6 +157,13 @@ export default function Address() {
 
         </form>
       </div>
+
+      {/* 🔴 Toast Component */}
+      <Toast
+        message={toastMessage}
+        onClose={() => setToastMessage("")}
+      />
+
     </div>
   );
 }
