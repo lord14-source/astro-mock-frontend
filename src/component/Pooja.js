@@ -1,21 +1,33 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import Footer from "./Footer";
+import Header from "./Header";
 import LoginModal from "./Login";
 import "./Pooja.css";
 
 export default function Pooja() {
 
   const navigate = useNavigate();
-  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
   const [poojas, setPoojas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showLogin, setShowLogin] = useState(false);
 
-  const [token, setToken] = useState(
-    localStorage.getItem("token")
-  );
+  const [token, setToken] = useState(localStorage.getItem("token"));
+
+  /* 🔴 Auto hide toaster */
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(""), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
+  /* ============================= */
+  /* Fetch Data */
+  /* ============================= */
 
   useEffect(() => {
 
@@ -28,6 +40,12 @@ export default function Pooja() {
 
   }, [token]);
 
+  const handleUnauthorized = () => {
+    localStorage.removeItem("token");
+    setToken(null);
+    setShowLogin(true);
+  };
+
   const fetchPoojas = async () => {
 
     setLoading(true);
@@ -35,7 +53,7 @@ export default function Pooja() {
 
     try {
 
-      await sleep(500);
+      await sleep(600);
 
       const res = await fetch(
         "http://localhost:8080/astro/getpoojalist",
@@ -52,26 +70,32 @@ export default function Pooja() {
         }
       );
 
-      if (res.status === 403) {
-        setShowLogin(true);
+      if (res.status === 401 || res.status === 403) {
+        handleUnauthorized();
         throw new Error("Unauthorized");
       }
 
-      if (!res.ok) throw new Error();
+      if (!res.ok) throw new Error("API Failed");
 
       const data = await res.json();
+
+      if (!Array.isArray(data)) {
+        throw new Error("Invalid API response");
+      }
+
       setPoojas(data);
 
     } catch (err) {
-
       console.error(err);
-      setError("Failed to load pooja list");
-
+      setError("❌ Failed to load pooja list");
     } finally {
-
       setLoading(false);
     }
   };
+
+  /* ============================= */
+  /* Handle Card Click */
+  /* ============================= */
 
   const handleCardClick = (poojaId) => {
 
@@ -83,33 +107,47 @@ export default function Pooja() {
     navigate(`/address/${poojaId}`);
   };
 
-  return (
+  /* ============================= */
+  /* UI */
+  /* ============================= */
 
+  return (
     <div className="pooja-page">
 
-      {/* 🔥 ADVANCED LOADER */}
+      <Header />
+
+      <nav className="nav">
+        <div className="container nav-inner">
+          <Link to="/">Home</Link>
+          <Link to="/consult">Consult</Link>
+          <Link to="/pooja">Pooja</Link>
+          <Link to="/horoscope">Horoscope</Link>
+          <Link to="/kundli">Kundli</Link>
+          <Link to="/tarot">Tarot</Link>
+          <Link to="/numerology">Numerology</Link>
+          <Link to="/blog">Blog</Link>
+        </div>
+      </nav>
+
+      {/* Loader */}
       {loading && (
         <div className="loader-overlay">
-
           <div className="divine-loader">
             <div className="ring"></div>
             <div className="ring glow"></div>
           </div>
-
           <p className="loader-text">
-            Loading Poojas<span className="dots">...</span>
+            Loading Divine Offerings<span className="dots">...</span>
           </p>
-
         </div>
       )}
 
       <h2>Divine Seva Offerings 🌸</h2>
 
-      {error && <p className="error">{error}</p>}
-
+      {/* Grid */}
       <div className="pooja-grid">
 
-        {poojas.map(p => (
+        {poojas.map((p) => (
 
           <div
             key={p.id}
@@ -134,13 +172,12 @@ export default function Pooja() {
 
               <button
                 className="book-btn"
-                style={{marginTop:"0px"}}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleCardClick(p.id);
                 }}
               >
-                Book Now ➡
+                Book Now <span className="arrow">➜</span>
               </button>
 
             </div>
@@ -151,6 +188,14 @@ export default function Pooja() {
 
       </div>
 
+      {/* 🔴 Bottom Toaster */}
+      {error && (
+        <div className="bottom-toast">
+          {error}
+        </div>
+      )}
+
+      {/* Login Modal */}
       {showLogin && (
         <LoginModal
           onClose={() => {
@@ -159,6 +204,8 @@ export default function Pooja() {
           }}
         />
       )}
+
+      <Footer />
 
     </div>
   );

@@ -15,6 +15,7 @@ import Register from "./component/Register";
 import "./component/styles.css";
 import Success from "./component/Success";
 import Tarot from "./component/Tarot";
+import "./component/theme.css";
 
 
 

@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import Header from "./Header";
 import "./Kundli.css";
 import LoginModal from "./Login";
 
@@ -15,11 +17,26 @@ export default function Kundli() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showLogin, setShowLogin] = useState(false);
-
   const [token, setToken] = useState(localStorage.getItem("token"));
 
-  // ---------- AUTH ----------
+  // Reset on mount
+  useEffect(() => {
+    setForm({ name: "", dob: "", time: "", place: "" });
+    setResult(null);
+    setError("");
+  }, []);
 
+  // Auto hide error toaster
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError("");
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
+  // Show login if no token
   useEffect(() => {
     if (!token) setShowLogin(true);
   }, [token]);
@@ -37,27 +54,20 @@ export default function Kundli() {
     return false;
   };
 
-  // ---------- FORM ----------
-
   const update = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value
-    });
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const validate = () => {
-    if (!form.name || !form.dob || !form.time || !form.place) {
-      setError("All birth details are required");
+    if (!form.name.trim() || !form.dob || !form.time || !form.place.trim()) {
+      setError("⚠ All birth details are required");
       return false;
     }
     return true;
   };
 
-  // ---------- GENERATE KUNDLI ----------
-
+  // Generate Kundli
   const generateKundli = async () => {
-
     setError("");
 
     if (requireLogin()) return;
@@ -67,15 +77,11 @@ export default function Kundli() {
     setResult(null);
 
     try {
-
-      const res = await fetch(
-        "http://localhost:8080/astro/kundli",
-        {
-          method: "POST",
-          headers: authHeader(),
-          body: JSON.stringify(form)
-        }
-      );
+      const res = await fetch("http://localhost:8080/astro/kundli", {
+        method: "POST",
+        headers: authHeader(),
+        body: JSON.stringify(form)
+      });
 
       if (res.status === 403) {
         setShowLogin(true);
@@ -94,119 +100,81 @@ export default function Kundli() {
       });
 
     } catch (err) {
-
       console.error(err);
-      setError("Authentication failed — login again");
-
+      setError("❌ Authentication failed — please login again");
     } finally {
-
       setLoading(false);
     }
   };
 
-  // ---------- DOWNLOAD PDF ----------
-
+  // Download PDF
   const downloadPdf = async () => {
-
     setError("");
 
     if (requireLogin()) return;
     if (!validate()) return;
 
     try {
-
-      const res = await fetch(
-        "http://localhost:8080/astro/kundli/pdf",
-        {
-          method: "POST",
-          headers: authHeader(),
-          body: JSON.stringify(form)
-        }
-      );
+      const res = await fetch("http://localhost:8080/astro/kundli/pdf", {
+        method: "POST",
+        headers: authHeader(),
+        body: JSON.stringify(form)
+      });
 
       if (res.status === 403) {
         setShowLogin(true);
         throw new Error("Unauthorized");
       }
 
-      if (!res.ok) throw new Error("PDF generation failed");
+      if (!res.ok) throw new Error("PDF failed");
 
       const blob = await res.blob();
-
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
 
+      const a = document.createElement("a");
       a.href = url;
       a.download = `${form.name || "kundli"}.pdf`;
-
       document.body.appendChild(a);
       a.click();
       a.remove();
-
       window.URL.revokeObjectURL(url);
 
     } catch (err) {
-
       console.error(err);
-      setError("PDF download failed");
-
+      setError("❌ PDF download failed");
     }
   };
 
-  // ---------- RESET ----------
-
   const reset = () => {
-
-    setForm({
-      name: "",
-      dob: "",
-      time: "",
-      place: ""
-    });
-
+    setForm({ name: "", dob: "", time: "", place: "" });
     setResult(null);
     setError("");
   };
 
-  // ---------- UI ----------
-
   return (
-
     <div className="kundli-page">
+      <Header />
+
+      <nav className="nav">
+        <div className="container nav-inner">
+          <Link to="/">Home</Link>
+          <Link to="/consult">Consult</Link>
+          <Link to="/pooja">Pooja</Link>
+          <Link to="/horoscope">Horoscope</Link>
+          <Link to="/kundli">Kundli</Link>
+          <Link to="/tarot">Tarot</Link>
+          <Link to="/numerology">Numerology</Link>
+          <Link to="/blog">Blog</Link>
+        </div>
+      </nav>
 
       <h2>Kundli Generator 🔮</h2>
 
       <div className="kundli-form">
-
-        <input
-          name="name"
-          placeholder="Name"
-          value={form.name}
-          onChange={update}
-        />
-
-        <input
-          type="date"
-          name="dob"
-          value={form.dob}
-          onChange={update}
-        />
-
-        <input
-          type="time"
-          name="time"
-          value={form.time}
-          onChange={update}
-        />
-
-        <input
-          name="place"
-          placeholder="Birth Place"
-          value={form.place}
-          onChange={update}
-        />
-
-        {error && <p className="error">{error}</p>}
+        <input name="name" placeholder="Name" value={form.name} onChange={update} />
+        <input type="date" name="dob" value={form.dob} onChange={update} />
+        <input type="time" name="time" value={form.time} onChange={update} />
+        <input name="place" placeholder="Birth Place" value={form.place} onChange={update} />
 
         <button onClick={generateKundli} disabled={loading}>
           {loading ? "Generating..." : "Generate Kundli"}
@@ -219,34 +187,33 @@ export default function Kundli() {
         <button className="reset-btn" onClick={reset}>
           Reset
         </button>
-
       </div>
 
+      {/* Bottom Center Toaster */}
+      {error && (
+        <div className="bottom-toast">
+          {error}
+        </div>
+      )}
+
       {result && (
-
         <div className="kundli-result">
-
           <h3>Your Birth Insight</h3>
-
           <p><b>Zodiac:</b> {result.zodiac}</p>
           <p><b>Nakshatra:</b> {result.nakshatra}</p>
           <p><b>Planet Influence:</b> {result.planet}</p>
           <p><b>Prediction:</b> {result.prediction}</p>
-
         </div>
       )}
 
       {showLogin && (
-
         <LoginModal
           onClose={() => {
             setToken(localStorage.getItem("token"));
             setShowLogin(false);
           }}
         />
-
       )}
-
     </div>
   );
 }

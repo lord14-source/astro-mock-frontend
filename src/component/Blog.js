@@ -1,14 +1,26 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  BtnBold,
+  BtnBulletList,
+  BtnItalic,
+  BtnLink,
+  BtnNumberedList,
+  BtnUnderline,
+  Editor,
+  EditorProvider,
+  Toolbar
+} from "react-simple-wysiwyg";
+
 import Footer from "./Footer";
 import Header from "./Header";
 import "./Home.css";
 import LoginModal from "./Login";
+import Toast from "./Toast";
 
 const API_URL = "http://localhost:8080/astro/blog";
 
 export default function Blog() {
-
-  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
   const [blogs, setBlogs] = useState([]);
   const [form, setForm] = useState({
@@ -17,20 +29,11 @@ export default function Blog() {
     author: ""
   });
 
+  const [wordCount, setWordCount] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [token, setToken] = useState(localStorage.getItem("token"));
   const [showLogin, setShowLogin] = useState(false);
-
-  const [token, setToken] = useState(
-    localStorage.getItem("token")
-  );
-
-  /* 🔐 Auto logout handler */
-  const handleUnauthorized = () => {
-    localStorage.removeItem("token");
-    setToken(null);
-    setShowLogin(true);
-  };
+  const [toastMessage, setToastMessage] = useState("");
 
   useEffect(() => {
     if (!token) {
@@ -40,64 +43,58 @@ export default function Blog() {
     }
   }, [token]);
 
-  /* 📡 FETCH BLOGS */
   const fetchBlogs = async () => {
-
-    if (!token) return;
-
-    setLoading(true);
-    setError("");
-
     try {
-
-      await sleep(400);
-
       const res = await fetch(API_URL, {
-        headers: {
-          Authorization: "Bearer " + token
-        }
+        headers: { Authorization: "Bearer " + token }
       });
 
-      if (res.status === 401 || res.status === 403) {
-        handleUnauthorized();
-        throw new Error("Unauthorized");
+      if (res.status === 401) {
+        localStorage.removeItem("token");
+        setToken(null);
+        setToastMessage("Session expired. Please login again.");
+        return;
       }
 
-      if (!res.ok) throw new Error("Failed");
-
-      const data = await res.json();
-      setBlogs(data);
+      const data = await res.json().catch(() => []);
+      setBlogs(data.reverse());
 
     } catch (err) {
-      console.error(err);
-      setError("Unable to fetch blogs.");
-    } finally {
-      setLoading(false);
+      console.error("Fetch Blog Error:", err);
+      setToastMessage("Failed to load blogs.");
     }
   };
 
-  /* ✍ HANDLE FORM CHANGE */
-  const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value
-    });
+  const handleContentChange = (e) => {
+    const html = e.target.value;
+    const plain = html.replace(/<[^>]+>/g, "");
+    const words = plain.trim().split(/\s+/).filter(Boolean);
+    setWordCount(words.length);
+
+    setForm({ ...form, content: html });
   };
 
-  /* ➕ ADD BLOG */
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!token) {
-      setShowLogin(true);
+    // ✅ Manual Validation
+    if (!form.title.trim() || !form.author.trim()) {
+      setToastMessage("Title and Author are required.");
+      return;
+    }
+
+    if (!form.content || wordCount < 5) {
+      setToastMessage("Blog content must be at least 5 words.");
       return;
     }
 
     setLoading(true);
-    setError("");
 
     try {
-
       const res = await fetch(API_URL, {
         method: "POST",
         headers: {
@@ -107,147 +104,112 @@ export default function Blog() {
         body: JSON.stringify(form)
       });
 
-      if (res.status === 401 || res.status === 403) {
-        handleUnauthorized();
-        throw new Error("Unauthorized");
+      const data = await res.json().catch(() => null);
+
+      if (res.status === 401) {
+        localStorage.removeItem("token");
+        setToken(null);
+        setToastMessage("Session expired. Please login again.");
+        return;
       }
 
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) {
+        throw new Error(data?.message || "Failed to publish blog.");
+      }
+
+      setBlogs([data, ...blogs]);
 
       setForm({ title: "", content: "", author: "" });
-      fetchBlogs();
+      setWordCount(0);
+
+      setToastMessage("Blog published successfully 🎉");
 
     } catch (err) {
-      console.error(err);
-      setError("Unable to add blog.");
+      console.error("Publish Error:", err);
+      setToastMessage(err.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }
   };
 
-  /* ❌ DELETE BLOG */
-  const handleDelete = async (id) => {
-
-    if (!token) {
-      setShowLogin(true);
-      return;
-    }
-
-    try {
-
-      const res = await fetch(`${API_URL}/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: "Bearer " + token
-        }
-      });
-
-      if (res.status === 401 || res.status === 403) {
-        handleUnauthorized();
-        throw new Error("Unauthorized");
-      }
-
-      fetchBlogs();
-
-    } catch (err) {
-      console.error(err);
-      setError("Unable to delete blog.");
-    }
-  };
-
   return (
     <div className="page">
-
       <Header />
 
-      {/* 🔥 Loader */}
-      {loading && (
-        <div className="loader-overlay">
-          <div className="divine-loader">
-            <div className="ring"></div>
-            <div className="ring glow"></div>
-          </div>
-          <p className="loader-text">
-            Loading Blog Content<span className="dots">...</span>
-          </p>
+      <nav className="nav">
+        <div className="container nav-inner">
+          <Link to="/">Home</Link>
+          <Link to="/consult">Consult</Link>
+          <Link to="/pooja">Pooja</Link>
+          <Link to="/horoscope">Horoscope</Link>
+          <Link to="/kundli">Kundli</Link>
+          <Link to="/tarot">Tarot</Link>
+          <Link to="/numerology">Numerology</Link>
+          <Link to="/blog">Blog</Link>
         </div>
-      )}
+      </nav>
 
       <section className="container hero">
         <div className="hero-box">
-
           <h2>📝 Astrology Blog</h2>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} style={{ marginTop: "25px" }}>
+          <form onSubmit={handleSubmit}>
 
             <input
-              type="text"
               name="title"
-              placeholder="Title"
+              placeholder="Blog Title"
               value={form.title}
               onChange={handleChange}
-              required
-              style={inputStyle}
-              disabled={loading}
-            />
-
-            <textarea
-              name="content"
-              placeholder="Content"
-              value={form.content}
-              onChange={handleChange}
-              required
-              style={{ ...inputStyle, height: "100px" }}
-              disabled={loading}
+              className="modern-input"
             />
 
             <input
-              type="text"
               name="author"
-              placeholder="Author"
+              placeholder="Author Name"
               value={form.author}
               onChange={handleChange}
-              required
-              style={inputStyle}
-              disabled={loading}
+              className="modern-input"
             />
 
+            <EditorProvider>
+              <div className="editor-box">
+                <Toolbar>
+                  <BtnBold />
+                  <BtnItalic />
+                  <BtnUnderline />
+                  <BtnBulletList />
+                  <BtnNumberedList />
+                  <BtnLink />
+                </Toolbar>
+
+                <Editor
+                  value={form.content}
+                  onChange={handleContentChange}
+                />
+
+                <div className="word-counter">
+                  {wordCount} words
+                </div>
+              </div>
+            </EditorProvider>
+
             <button
-              type="submit"
-              style={{
-                ...buttonStyle,
-                opacity: loading ? 0.6 : 1
-              }}
+              className="modern-btn"
               disabled={loading}
             >
-              {loading ? "Adding..." : "Add Blog"}
+              {loading ? "Publishing..." : "Publish Blog"}
             </button>
 
           </form>
 
-          {error && (
-            <p style={{ color: "#ff4d4f", marginTop: "15px" }}>
-              {error}
-            </p>
-          )}
-
-          {/* Blog List */}
-          <div style={{ marginTop: "40px" }}>
+          <div className="blog-list">
             {blogs.map((blog) => (
-              <div key={blog.id} style={resultBox} className="fade-in">
+              <div key={blog.id} className="blog-card">
                 <h3>{blog.title}</h3>
-                <p>{blog.content}</p>
-                <small>
-                  ✍ {blog.author} | {blog.createdAt}
-                </small>
-                <br /><br />
-                <button
-                  onClick={() => handleDelete(blog.id)}
-                  style={{ ...buttonStyle, backgroundColor: "red" }}
-                >
-                  Delete
-                </button>
+                <div
+                  dangerouslySetInnerHTML={{ __html: blog.content }}
+                />
+                <small>✍ {blog.author}</small>
               </div>
             ))}
           </div>
@@ -264,39 +226,12 @@ export default function Blog() {
         />
       )}
 
-      <Footer />
+      <Toast
+        message={toastMessage}
+        onClose={() => setToastMessage("")}
+      />
 
+      <Footer />
     </div>
   );
 }
-
-/* ---------- STYLES ---------- */
-
-const inputStyle = {
-  padding: "12px",
-  margin: "10px",
-  borderRadius: "10px",
-  border: "1px solid #e72d2d",
-  width: "260px",
-  fontSize: "14px"
-};
-
-const buttonStyle = {
-  padding: "12px 25px",
-  borderRadius: "10px",
-  border: "none",
-  backgroundColor: "#6c5ce7",
-  color: "white",
-  cursor: "pointer",
-  fontWeight: "600",
-  transition: "0.3s"
-};
-
-const resultBox = {
-  marginTop: "20px",
-  padding: "20px",
-  background: "linear-gradient(135deg, #de7534, #6c5ce7)",
-  borderRadius: "15px",
-  color: "white",
-  animation: "fadeIn 0.5s ease-in-out"
-};

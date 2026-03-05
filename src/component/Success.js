@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 const Success = () => {
+
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
 
@@ -10,18 +11,24 @@ const Success = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (sessionId) {
-      axios
-        .get(`http://localhost:8082/flower/verify-payment?sessionId=${sessionId}`)
-        .then((res) => {
-          setBookingData(res.data);
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.error("Verification failed", err);
-          setLoading(false);
-        });
+
+    if (!sessionId) {
+      setLoading(false);
+      return;
     }
+
+    axios.get(
+      `http://localhost:8080/astro/verify-payment?sessionId=${sessionId}`
+    )
+    .then((res) => {
+      setBookingData(res.data);
+      setLoading(false);
+    })
+    .catch((err) => {
+      console.error("Verification failed", err);
+      setLoading(false);
+    });
+
   }, [sessionId]);
 
   if (loading) {
@@ -33,23 +40,15 @@ const Success = () => {
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        marginTop: "60px",
-      }}
-    >
-      <div
-        style={{
-          width: "400px",
-          padding: "25px",
-          borderRadius: "12px",
-          boxShadow: "0 5px 20px rgba(0,0,0,0.2)",
-          textAlign: "center",
-          background: "#fff",
-        }}
-      >
+    <div style={{ display: "flex", justifyContent: "center", marginTop: "60px" }}>
+      <div style={{
+        width: "400px",
+        padding: "25px",
+        borderRadius: "12px",
+        boxShadow: "0 5px 20px rgba(0,0,0,0.2)",
+        textAlign: "center",
+        background: "#fff"
+      }}>
         <h1 style={{ color: "green" }}>🎉 Booking Confirmed!</h1>
 
         {bookingData ? (
@@ -65,7 +64,7 @@ const Success = () => {
         )}
 
         <p style={{ marginTop: "15px", color: "#555" }}>
-          Please be ready at your selected time. Our team will connect with you.
+          Please be ready at your selected time.
         </p>
       </div>
     </div>

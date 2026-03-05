@@ -1,0 +1,157 @@
+/* ===== PAGE ===== */
+.login-page {
+  min-height: 100vh;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: "Segoe UI", sans-serif;
+  perspective: 1200px;
+}
+
+/* ===== PROCEDURAL GALAXY ===== */
+.galaxy {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(circle at 20% 30%, #1b0033 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, #001f3f 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, #330033 0%, transparent 50%),
+    linear-gradient(135deg, #000814, #001d3d, #000);
+  z-index: -5;
+}
+
+/* ===== STARS ===== */
+.star-field {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: -4;
+}
+
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: white;
+  border-radius: 50%;
+  animation: twinkle 2s infinite alternate;
+}
+
+@keyframes twinkle {
+  from { opacity: 0.2; }
+  to { opacity: 1; }
+}
+
+/* ===== SHOOTING STARS ===== */
+.shooting-stars {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: -3;
+}
+
+.shoot {
+  position: absolute;
+  width: 3px;
+  height: 100px;
+  background: linear-gradient(white, transparent);
+  transform: rotate(45deg);
+  animation: shoot 4s linear forwards;
+}
+
+@keyframes shoot {
+  0% { transform: translateX(0) translateY(0) rotate(45deg); opacity: 1; }
+  100% { transform: translateX(800px) translateY(800px) rotate(45deg); opacity: 0; }
+}
+
+/* ===== GLOWING PLANET ===== */
+.planet {
+  position: absolute;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #00eaff, #001d3d);
+  box-shadow: 0 0 80px #00eaff;
+  top: 15%;
+  right: 10%;
+  animation: float 8s ease-in-out infinite;
+  z-index: -2;
+}
+
+@keyframes float {
+  0%,100% { transform: translateY(0px); }
+  50% { transform: translateY(40px); }
+}
+
+/* ===== LOGIN CARD ===== */
+.login-card {
+  width: 380px;
+  padding: 45px;
+  border-radius: 25px;
+  text-align: center;
+  color: white;
+  z-index: 2;
+
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(25px);
+  border: 1px solid rgba(255,255,255,0.2);
+
+  box-shadow:
+    0 0 40px rgba(0,0,0,0.8),
+    0 0 100px rgba(0, 234, 255, 0.3);
+
+  transition: transform 0.2s ease;
+}
+
+/* ===== TEXT ===== */
+.logo {
+  font-size: 30px;
+  margin-bottom: 20px;
+}
+
+/* ===== INPUTS ===== */
+.login-card input {
+  width: 100%;
+  padding: 14px;
+  margin: 12px 0;
+  border-radius: 12px;
+  border: none;
+  outline: none;
+}
+
+/* ===== BUTTON ===== */
+.login-card button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 15px;
+  border-radius: 12px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  background: linear-gradient(45deg, #00eaff, #0077ff);
+  color: white;
+  transition: 0.3s;
+}
+
+.login-card button:hover {
+  transform: scale(1.05);
+}
+
+/* ===== ERROR ===== */
+.error {
+  margin-top: 10px;
+  color: #ff6b6b;
+}
+
+.register-link {
+  margin-top: 18px;
+}
+
+.register-link a {
+  color: #00eaff;
+  font-weight: bold;
+  text-decoration: none;
+}

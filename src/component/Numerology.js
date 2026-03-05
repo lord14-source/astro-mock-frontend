@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Footer from "./Footer";
 import Header from "./Header";
 import "./Home.css";
+import "./Numerology.css";
 import LoginModal from "./Login";
 
 const API_URL = "http://localhost:8080/astro/numerology";
@@ -18,28 +20,35 @@ export default function Numerology() {
   const [error, setError] = useState("");
   const [showLogin, setShowLogin] = useState(false);
 
-  const [token, setToken] = useState(
-    localStorage.getItem("token")
-  );
+  const [token, setToken] = useState(localStorage.getItem("token"));
 
-  /* 🔐 Auto logout handler */
+  /* 🔐 Handle Unauthorized */
   const handleUnauthorized = () => {
     localStorage.removeItem("token");
     setToken(null);
     setShowLogin(true);
   };
 
+  /* 🔁 Auto show login if no token */
   useEffect(() => {
-    if (!token) {
-      setShowLogin(true);
-    }
+    if (!token) setShowLogin(true);
   }, [token]);
+
+  /* 🔥 Auto hide toaster */
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(""), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
   /* 📡 API CALL */
   const fetchNumerology = async () => {
 
+    setError("");
+
     if (!name.trim() || !dob) {
-      setError("Please enter valid Name and Date of Birth");
+      setError("⚠ Please enter valid Name and Date of Birth");
       return;
     }
 
@@ -49,7 +58,6 @@ export default function Numerology() {
     }
 
     setLoading(true);
-    setError("");
     setResult(null);
 
     try {
@@ -77,7 +85,7 @@ export default function Numerology() {
 
     } catch (err) {
       console.error(err);
-      setError("Unable to calculate numerology. Please try again.");
+      setError("❌ Unable to calculate numerology. Try again.");
     } finally {
       setLoading(false);
     }
@@ -88,7 +96,20 @@ export default function Numerology() {
 
       <Header />
 
-      {/* 🔥 Full Screen Loader */}
+      <nav className="nav">
+        <div className="container nav-inner">
+          <Link to="/">Home</Link>
+          <Link to="/consult">Consult</Link>
+          <Link to="/pooja">Pooja</Link>
+          <Link to="/horoscope">Horoscope</Link>
+          <Link to="/kundli">Kundli</Link>
+          <Link to="/tarot">Tarot</Link>
+          <Link to="/numerology">Numerology</Link>
+          <Link to="/blog">Blog</Link>
+        </div>
+      </nav>
+
+      {/* Full Screen Loader */}
       {loading && (
         <div className="loader-overlay">
           <div className="divine-loader">
@@ -104,7 +125,7 @@ export default function Numerology() {
       <section className="container hero">
         <div className="hero-box">
 
-          <h2>🔢 Premium Numerology Calculator</h2>
+          <h2>🔢 Numerology Calculator</h2>
           <p>AI-powered Vedic numerology from backend engine</p>
 
           <div style={{ marginTop: "25px" }}>
@@ -139,12 +160,6 @@ export default function Numerology() {
 
           </div>
 
-          {error && (
-            <p style={{ color: "#ff4d4f", marginTop: "15px" }}>
-              {error}
-            </p>
-          )}
-
           {result && (
             <div style={resultBox} className="fade-in">
 
@@ -169,6 +184,13 @@ export default function Numerology() {
 
         </div>
       </section>
+
+      {/* 🔴 Bottom Center Toaster */}
+      {error && (
+        <div className="bottom-toast">
+          {error}
+        </div>
+      )}
 
       {showLogin && (
         <LoginModal
@@ -211,6 +233,5 @@ const resultBox = {
   padding: "25px",
   background: "linear-gradient(135deg, #de7534, #6c5ce7)",
   borderRadius: "15px",
-  color: "white",
-  animation: "fadeIn 0.5s ease-in-out"
+  color: "white"
 };
