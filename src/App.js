@@ -15,7 +15,8 @@ import "./component/styles.css";
 import Success from "./component/Success";
 import Tarot from "./component/Tarot";
 import Footer from "./component/Footer"
-
+import ChatPage from "./component/ChatPage/ChatPage";
+import AstrologerDashboard from "./component/Astrologer/Astrologer";
 
 
 
@@ -39,7 +40,7 @@ function App() {
         <Route path="/register" element={<Register />} />
 
         <Route path="/talk" element={<Dashboard />} />
-<Route path="/chat" element={<Dashboard />} />
+{/* <Route path="/chat" element={<Dashboard />} /> */}
 <Route path="/horoscope" element={<Dashboard />} />
 <Route path="/kundli" element={<Kundali />} />
 <Route path="/consult" element={<Consult />} />
@@ -63,6 +64,10 @@ function App() {
             </Protected>
           }
         />
+
+
+        <Route path="/chat" element={<ChatPage />} />
+        <Route path="/astrologer" element={<AstrologerDashboard />} />
 
       </Routes>
 

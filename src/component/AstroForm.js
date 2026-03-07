@@ -18,7 +18,7 @@ function AstroForm() {
   const submit = async e => {
     e.preventDefault();
 
-    const res = await fetch("http://localhost:8080/astro/generate", {
+    const res = await fetch("http://localhost:8082/astro/generate", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify(form)

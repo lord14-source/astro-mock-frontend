@@ -5,7 +5,7 @@ import Shivam from "../image/sashi_data.jpeg";
 import Footer from "./Footer"; // ✅ ADD THIS
 import Header from "./Header";
 import "./Home.css";
-
+import { useNavigate } from "react-router-dom";
 /* ---------- Compact Card ---------- */
 const Card = ({ icon, title, to }) => (
   <Link to={to} className="card-link">
@@ -20,16 +20,45 @@ const Card = ({ icon, title, to }) => (
 );
 
 /* ---------- Astrologer Card ---------- */
-const AstrologerCard = ({ astro }) => (
-  <div className="astro-card">
-    <img src={astro.photo} alt={astro.name} />
-    <h3>{astro.name}</h3>
-    <p className="astro-exp">{astro.experience}</p>
-    <p className="astro-desc">{astro.desc}</p>
-    <p className="astro-phone">📞 {astro.phone}</p>
-    <button className="astro-btn">Consult</button>
-  </div>
-);
+// const AstrologerCard = ({ astro }) => (
+//   <div className="astro-card">
+//     <img src={astro.photo} alt={astro.name} />
+//     <h3>{astro.name}</h3>
+//     <p className="astro-exp">{astro.experience}</p>
+//     <p className="astro-desc">{astro.desc}</p>
+//     <p className="astro-phone">📞 {astro.phone}</p>
+//      {/* NEW Chat Label */}
+//       <span className="chat-label" onClick={handleChatClick}>
+//         💬 Chat
+//       </span>
+//     <button className="astro-btn">Consult</button>
+//   </div>
+// );
+
+
+/* ---------- Astrologer Card ---------- */
+
+const AstrologerCard = ({ astro }) => {
+  const navigate = useNavigate();
+
+  const handleChatClick = () => {
+    // localStorage.setItem("userId","12345"); 
+    navigate("/chat", {
+      state: { receiverId: astro.phone }   // ✅ sending mobile as id
+    });
+  };
+
+  return (
+    <div className="astro-card">
+      <img src={astro.photo} alt={astro.name} />
+      <h3>{astro.name}</h3>
+      <p className="astro-exp">{astro.experience}</p>
+      <p className="astro-desc">{astro.desc}</p>
+      <p className="astro-phone">📞 {astro.phone}</p>
+      <button className="astro-btn" onClick={handleChatClick}>💬 Consult</button>
+    </div>
+  );
+};
 
 /* ---------- Dummy Astrologers ---------- */
 const astrologers = [

@@ -69,7 +69,7 @@ function Dashboard() {
     try {
 
       const res = await fetch(
-        "http://localhost:8080/astro/generate",
+        "http://localhost:8082/astro/generate",
         {
           method: "POST",
           headers: authHeader(),

@@ -63,7 +63,7 @@ export default function Consult() {
     try {
 
       const res = await fetch(
-        "http://localhost:8080/astro/consult",
+        "http://localhost:8082/astro/consult",
         {
           method: "POST",
           headers: authHeader(),

@@ -30,7 +30,7 @@ export default function Address() {
 
     try {
       const res = await fetch(
-        `http://localhost:8080/astro/save/${poojaId}`,
+        `http://localhost:8082/astro/save/${poojaId}`,
         {
           method: "POST",
           headers: {

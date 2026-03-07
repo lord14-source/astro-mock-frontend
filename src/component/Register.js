@@ -23,7 +23,7 @@ function Register() {
       setLoading(true);
 
       const res = await fetch(
-        "http://localhost:8080/auth/register",
+        "http://localhost:8082/auth/register",
         {
           method: "POST",
           headers: {
@@ -45,7 +45,9 @@ function Register() {
       }
 
       setSuccess("✅ Registration successful!");
-
+      localStorage.setItem("userId", email.trim());  // NEW: store userId
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("email", email);
       // optional redirect after delay
       setTimeout(() => {
         window.location = "/";

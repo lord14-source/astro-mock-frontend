@@ -21,7 +21,7 @@ function Login({ onSuccess }) {
       setLoading(true);
 
       const res = await fetch(
-        "http://localhost:8080/auth/login",
+        "http://localhost:8082/auth/login",
         {
           method: "POST",
           headers: {
@@ -41,7 +41,7 @@ function Login({ onSuccess }) {
 
       // ✅ save auth
       localStorage.clear()
-
+      localStorage.setItem("userId", email.trim());  // NEW: store userId
       localStorage.setItem("token", data.token);
       localStorage.setItem("email", email);
 
